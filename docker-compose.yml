@@ -7,11 +7,19 @@ networks:
 services:
   frontend:
     build: .
-    image: cachaide/certificados-calidad-frontend:1.0
-    container_name: certificados-calidad_frontend_prod
+    image: techchaide/proyecto-frontend:1.0
+    container_name: proyecto_frontend_prod
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+        reservations:
+          memory: 32M
+    env_file:
+      - .env.local
     environment:
-      - NEXT_PUBLIC_BASE_PATH=/Certificados-Calidad
+      - NEXT_PUBLIC_BASE_PATH=/ruta-página
       - HOSTNAME=0.0.0.0
     volumes:
       - "/fotomenu:/app/fotomenu"
@@ -21,16 +29,16 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=traefik-net"
-      - "traefik.http.routers.certificados-calidad-frontend-prod.rule=Host(`apps.chaide.com`) && (PathPrefix(`/Certificados-Calidad`) || PathPrefix(`/_next`) || PathPrefix(`/favicon.ico`))"
-      - "traefik.http.routers.certificados-calidad-frontend-prod.entrypoints=websecure"
-      - "traefik.http.routers.certificados-calidad-frontend-prod.priority=100"
+      - "traefik.http.routers.proyecto-frontend-prod.rule=Host(`apps.chaide.com`) && (PathPrefix(`/ruta-página`) || PathPrefix(`/_next`) || PathPrefix(`/favicon.ico`))"
+      - "traefik.http.routers.proyecto-frontend-prod.entrypoints=websecure"
+      - "traefik.http.routers.proyecto-frontend-prod.priority=100"
       # Note: No stripPrefix middleware for frontend so the app receives the /b2b prefix.
-      - "traefik.http.routers.certificados-calidad-frontend-prod.tls=true"
-      - "traefik.http.services.certificados-calidad-frontend-prod.loadbalancer.server.port=3000"
+      - "traefik.http.routers.proyecto-frontend-prod.tls=true"
+      - "traefik.http.services.proyecto-frontend-prod.loadbalancer.server.port=3000"
 
       # --- LÍNEAS AÑADIDAS ---
       # 1. Define el middleware de la lista blanca de IPs
       - "traefik.http.middlewares.lista-ips-calidad.ipwhitelist.sourceRange=127.0.0.1/32, 201.234.212.234/32"
 
       # 2. Aplica el middleware al router del frontend
-      - "traefik.http.routers.certificados-calidad-frontend-prod.middlewares=lista-ips-calidad"
+      - "traefik.http.routers.proyecto-frontend-prod.middlewares=lista-ips-calidad"
