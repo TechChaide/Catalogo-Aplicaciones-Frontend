@@ -1,0 +1,7 @@
+# No enviar dependencias ni builds locales (de Windows) a la imagen: se instalan y compilan dentro de Docker.
+node_modules
+.next
+.git
+certs
+*.tsbuildinfo
+npm-debug.log*

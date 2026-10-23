@@ -8,7 +8,7 @@ import { Eye, EyeOff, Camera } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { useState } from 'react';
 import { authService } from '@/services/seguridades/auth.service';
-import { tipoUsuarioAplicacionService } from '@/services/seguridades/tipoUsuarioAplicacion.service';
+import { guardarAccesos, resolverAccesos } from '@/lib/permisos';
 import { environment } from '@/environments/environments.prod';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
@@ -118,55 +118,20 @@ export default function LoginPage() {
                     if (user) localStorage.setItem('user', JSON.stringify(user));
                     if (perfiles) localStorage.setItem('perfiles', JSON.stringify(perfiles));
 
-                    const perfilesArray: any[] = Array.isArray(perfiles) ? perfiles : [];
-                    const appsByProfile: Record<string, any[]> = {};
-
-                    // Recolectar perfiles por aplicación
-                    for (const perfil of perfilesArray) {
-                        const codigo = perfil?.codigo_tipo_usuario || perfil?.codigoTipoUsuario || perfil?.codigo || perfil?.id;
-                        if (!codigo) continue;
-                        try {
-                            const resp = await tipoUsuarioAplicacionService.getByCodigoTipoUsuario(String(codigo));
-                            const items: any[] = Array.isArray(resp?.data) ? resp.data : [];
-                            for (const item of items) {
-                                const codigoApp = item?.codigo_aplicacion || item?.aplicacion?.codigo_aplicacion;
-                                if (codigoApp) {
-                                    if (!appsByProfile[codigoApp]) appsByProfile[codigoApp] = [];
-                                    if (!appsByProfile[codigoApp].includes(perfil)) appsByProfile[codigoApp].push(perfil);
-                                }
-                            }
-                        } catch (err) {
-                            // Continuar con siguiente perfil
-                        }
-                    }
-
-                    const aplicacionesConfiguradas = Array.isArray(environment.aplicaciones) 
-                        ? environment.aplicaciones 
-                        : [environment.nombreAplicacion];
-                    
-                    const appsByProfileFiltrado: Record<string, any[]> = {};
-                    for (const app of aplicacionesConfiguradas) {
-                        if (appsByProfile[app]) {
-                            appsByProfileFiltrado[app] = appsByProfile[app];
-                        }
-                    }
-
-                    const aplicacionesValidas = Object.keys(appsByProfileFiltrado);
-                    if (!aplicacionesValidas.length) {
-                        setState({ success: false, message: 'No tienes acceso a las aplicaciones configuradas.' });
+                    // Permisos: todas las aplicaciones activas de sus perfiles (no solo las de environment).
+                    const accesos = await resolverAccesos(perfiles);
+                    if (!accesos.aplicaciones.length) {
+                        setState({ success: false, message: 'No tienes aplicaciones asignadas. Solicítalas a Tecnología.' });
                         setPending(false);
                         return;
                     }
-
-                    // Guardar datos en localStorage
-                    localStorage.setItem('appsByProfile', JSON.stringify(appsByProfileFiltrado));
-                    localStorage.setItem('aplicacionesDisponibles', JSON.stringify(aplicacionesValidas));
+                    guardarAccesos(accesos);
 
                     // Navegar al dashboard
                     const basePath = ((window as any).__NEXT_DATA__?.basePath || process.env.NEXT_PUBLIC_BASE_PATH || '').replace(/\/+$/, '');
                     window.location.href = `${basePath}/dashboard`;
                     console.log('✓ Login por contraseña exitoso');
-                    console.log('appsByProfile:', appsByProfileFiltrado);
+                    console.log('Aplicaciones del usuario:', accesos.aplicaciones);
                     toast({
                         title: '¡Bienvenido!',
                         description: 'Has iniciado sesión exitosamente.',
@@ -212,7 +177,7 @@ export default function LoginPage() {
                                 height={46}
                                 priority
                             />
-                            <CardTitle className="text-2xl">Módulo Base</CardTitle>
+                            <CardTitle className="text-2xl">Catálogo de Aplicaciones</CardTitle>
                         </div>
                         <CardDescription>
                             Inicio de Sesión
@@ -352,47 +317,16 @@ export default function LoginPage() {
                                     if (user) localStorage.setItem('user', JSON.stringify(user));
                                     if (perfiles) localStorage.setItem('perfiles', JSON.stringify(perfiles));
 
-                                    const perfilesArray = Array.isArray(perfiles) ? perfiles : [];
-                                    const appsByProfile: Record<string, any[]> = {};
+                                    // Permisos: todas las aplicaciones activas de sus perfiles (no solo las de environment).
+                                    const accesos = await resolverAccesos(perfiles);
+                                    const aplicacionesValidas = accesos.aplicaciones;
+                                    console.log('Aplicaciones del usuario:', aplicacionesValidas);
 
-                                    for (const perfil of perfilesArray) {
-                                        const codigoPerfil = perfil?.codigo_tipo_usuario || perfil?.codigoTipoUsuario || perfil?.codigo || perfil?.id;
-                                        if (!codigoPerfil) continue;
-                                        try {
-                                            const resp = await tipoUsuarioAplicacionService.getByCodigoTipoUsuario(String(codigoPerfil));
-                                            const items = Array.isArray(resp?.data) ? resp.data : [];
-                                            for (const item of items) {
-                                                const codigoApp = item?.codigo_aplicacion || item?.aplicacion?.codigo_aplicacion;
-                                                if (codigoApp) {
-                                                    if (!appsByProfile[codigoApp]) appsByProfile[codigoApp] = [];
-                                                    if (!appsByProfile[codigoApp].includes(perfil)) appsByProfile[codigoApp].push(perfil);
-                                                }
-                                            }
-                                        } catch (err) {
-                                            console.error('Error procesando perfil:', err);
-                                        }
-                                    }
-
-                                    const aplicacionesConfiguradas = Array.isArray(environment.aplicaciones) 
-                                        ? environment.aplicaciones 
-                                        : [environment.nombreAplicacion];
-                                    
-                                    const appsByProfileFiltrado: Record<string, any[]> = {};
-                                    for (const app of aplicacionesConfiguradas) {
-                                        if (appsByProfile[app]) {
-                                            appsByProfileFiltrado[app] = appsByProfile[app];
-                                        }
-                                    }
-
-                                    const aplicacionesValidas = Object.keys(appsByProfileFiltrado);
-                                    console.log('Aplicaciones válidas:', aplicacionesValidas);
-                                    
                                     if (aplicacionesValidas.length > 0) {
-                                        localStorage.setItem('appsByProfile', JSON.stringify(appsByProfileFiltrado));
+                                        guardarAccesos(accesos);
                                         console.log('✓ Login facial exitoso - Datos guardados en localStorage');
                                         console.log('Aplicaciones válidas:', aplicacionesValidas);
                                         console.log('User:', user);
-                                        console.log('AppsByProfile:', appsByProfileFiltrado);
                                         // Redirigir al dashboard tras login facial exitoso
                                         const basePath = ((window as any).__NEXT_DATA__?.basePath || process.env.NEXT_PUBLIC_BASE_PATH || '').replace(/\/+$/, '');
                                         window.location.href = `${basePath}/dashboard`;
@@ -401,7 +335,7 @@ export default function LoginPage() {
                                             description: 'Acceso al dashboard completado'
                                         });
                                     } else {
-                                        setState({ success: false, message: 'No tienes acceso a las aplicaciones configuradas.' });
+                                        setState({ success: false, message: 'No tienes aplicaciones asignadas. Solicítalas a Tecnología.' });
                                     }
                                 } else {
                                     console.error('No se encontró user o perfiles');

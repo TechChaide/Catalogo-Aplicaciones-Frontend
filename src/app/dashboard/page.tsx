@@ -1,26 +1,15 @@
-
-
 'use client';
 
-import { environment } from '@/environments/environments.prod';
-import Image from 'next/image';
+import { AppCatalog } from '@/components/app-catalog';
+import { ProtectedRoute } from '@/components/protected-route';
+import { UserCard } from '@/components/user-card';
 
-// Página por defecto: fondo gris claro y logo centrado.
+// Tras el login: el catálogo a pantalla completa (sin menú lateral) y la tarjeta del usuario flotante.
 export default function DashboardPage() {
     return (
-        <div className="flex flex-1 items-center justify-center min-h-full bg-gray-100">
-            <div className="flex flex-col items-center gap-6">
-                <div className="transition-all duration-300 hover:scale-110 hover:drop-shadow-2xl cursor-pointer">
-                    <Image
-                        src={`${environment.basePath}/img/icon.png`}
-                        alt="Chaide Logo"
-                        width={180}
-                        height={80}
-                        priority
-                        className="select-none"
-                    />
-                </div>
-            </div>
-        </div>
+        <ProtectedRoute>
+            <AppCatalog />
+            <UserCard />
+        </ProtectedRoute>
     );
 }
