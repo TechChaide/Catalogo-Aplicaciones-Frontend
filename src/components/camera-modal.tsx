@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { X, Loader2 } from "lucide-react";
 import { environment } from "@/environments/environments.prod";
+import "@/components/catalog/catalog.css";
 
 interface EmployeeData {
   CODIGO: string;
@@ -270,10 +271,10 @@ export function CameraModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-gray-900/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div className="cx-cam">
       <div className="relative w-full max-w-lg mx-auto flex flex-col items-center">
         {/* Camera Container */}
-        <div className="relative bg-black rounded-2xl overflow-hidden shadow-2xl border border-gray-800 w-full aspect-[3/4] max-h-[70vh]">
+        <div className="cx-cam-frame">
           {/* Video element - SIEMPRE renderizado */}
           <video
             ref={videoRef}
@@ -333,14 +334,14 @@ export function CameraModal({
           )}
 
           {/* Corner brackets - z-index 3 para estar sobre el video */}
-          <div className="absolute top-12 left-12 w-8 h-8 border-t-2 border-l-2 border-gray-400 rounded-tl-lg opacity-70 z-[3] pointer-events-none" />
-          <div className="absolute top-12 right-12 w-8 h-8 border-t-2 border-r-2 border-gray-400 rounded-tr-lg opacity-70 z-[3] pointer-events-none" />
-          <div className="absolute bottom-12 left-12 w-8 h-8 border-b-2 border-l-2 border-gray-400 rounded-bl-lg opacity-70 z-[3] pointer-events-none" />
-          <div className="absolute bottom-12 right-12 w-8 h-8 border-b-2 border-r-2 border-gray-400 rounded-br-lg opacity-70 z-[3] pointer-events-none" />
+          <div className="absolute top-12 left-12 w-8 h-8 border-t-2 border-l-2 border-[#5aa2ff] rounded-tl-lg opacity-80 z-[3] pointer-events-none" />
+          <div className="absolute top-12 right-12 w-8 h-8 border-t-2 border-r-2 border-[#5aa2ff] rounded-tr-lg opacity-80 z-[3] pointer-events-none" />
+          <div className="absolute bottom-12 left-12 w-8 h-8 border-b-2 border-l-2 border-[#5aa2ff] rounded-bl-lg opacity-80 z-[3] pointer-events-none" />
+          <div className="absolute bottom-12 right-12 w-8 h-8 border-b-2 border-r-2 border-[#5aa2ff] rounded-br-lg opacity-80 z-[3] pointer-events-none" />
 
           {/* Face guide oval */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-[3]">
-            <div className="w-64 h-80 rounded-[45%] border-2 border-white/30" />
+            <div className="w-64 h-80 rounded-[45%] border-2 border-[#5aa2ff]/40 shadow-[0_0_40px_rgba(90,162,255,0.2)]" />
           </div>
 
           {/* Counter/Status display - esquina inferior derecha */}
@@ -358,11 +359,8 @@ export function CameraModal({
 
           {/* Status message */}
           <div className="absolute bottom-6 left-0 right-0 text-center z-[5]">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-black/50 backdrop-blur-md border border-white/10">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-500 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500" />
-              </span>
+            <div className="cx-cam-status">
+              <span className="cx-cam-dot" />
               <span className="text-white font-medium text-sm">
                 {getStatusMessage()}
               </span>

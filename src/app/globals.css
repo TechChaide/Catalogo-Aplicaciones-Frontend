@@ -4,24 +4,24 @@
 
 @layer base {
   :root {
-    --background: 210 29% 97%; /* Light Gray #F0F4F8 */
-    --foreground: 224 71.4% 4.1%;
-    --card: 210 40% 100%;
-    --card-foreground: 224 71.4% 4.1%;
-    --popover: 210 40% 100%;
-    --popover-foreground: 224 71.4% 4.1%;
+    --background: 225 22% 4%; /* #07080b */
+    --foreground: 220 33% 95%; /* #eef1f7 */
+    --card: 225 18% 8%;
+    --card-foreground: 220 33% 95%;
+    --popover: 225 18% 8%;
+    --popover-foreground: 220 33% 95%;
     --primary: 212 100% 36%; /* #0055b8 */
     --primary-foreground: 210 40% 98%;
     --secondary: 220 14.3% 95.9%;
     --secondary-foreground: 224 71.4% 4.1%;
-    --muted: 220 14.3% 95.9%;
-    --muted-foreground: 220 8.9% 46.1%;
-    --accent: 210 29% 97%;
-    --accent-foreground: 224 71.4% 4.1%;
+    --muted: 225 16% 12%;
+    --muted-foreground: 220 14% 70%;
+    --accent: 213 100% 68%; /* #5aa2ff */
+    --accent-foreground: 225 22% 4%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 20% 98%;
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
+    --border: 0 0% 100% / 0.09;
+    --input: 0 0% 100% / 0.09;
     --ring: 212 100% 36%;
     --radius: 0.5rem;
     
@@ -73,7 +73,15 @@
   html {
     font-size: 85%;
   }
+  html.cx-html {
+    font-size: 16px;
+    background: #07080b;
+  }
   body {
     @apply bg-background text-foreground;
+  }
+  html.cx-html body {
+    background: #07080b;
+    color: #eef1f7;
   }
 }

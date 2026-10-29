@@ -1,50 +1,26 @@
 'use client';
 
-import Image from 'next/image';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Eye, EyeOff, Camera } from 'lucide-react';
-import { Label } from '@/components/ui/label';
-import { useState } from 'react';
+import { Camera, Eye, EyeOff, AlertTriangle } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { scramble, subtleScramble } from '@/components/catalog/scramble';
 import { authService } from '@/services/seguridades/auth.service';
 import { guardarAccesos, resolverAccesos } from '@/lib/permisos';
 import { environment } from '@/environments/environments.prod';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertTriangle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { CameraModal } from '@/components/camera-modal';
-
-function ChaideLogo() {
-  return (
-    <div className="flex flex-col items-center justify-center text-white">
-      <div className="flex flex-col items-center gap-4">
-        <Image
-          src={`${environment.basePath}/img/logo_chaide.svg`}
-          alt="Chaide Logo"
-          width={250}
-          height={250}
-          priority
-        />
-      </div>
-    </div>
-  );
-}
+import { Atmosphere } from '@/components/catalog/atmosphere';
+import { ParticleField } from '@/components/catalog/particle-field';
+import '@/components/catalog/catalog.css';
 
 const initialState = {
   success: false,
   message: '',
 };
 
-function SubmitButton({ pending }: { pending: boolean }) {
-    return (
-        <Button type="submit" className="w-full" disabled={pending}>
-            {pending ? 'Ingresando...' : 'Ingresar'}
-        </Button>
-    );
-}
+const AUTH_LAYOUT = { y: -0.06, scale: 0.9, alpha: 0.85 } as const;
 
 export default function LoginPage() {
+    const fieldRef = useRef<ParticleField | null>(null);
     const [state, setState] = useState(initialState);
     const [pending, setPending] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
@@ -160,108 +136,109 @@ export default function LoginPage() {
         }
     };
 
-    return (
-        <div className="w-full lg:grid lg:min-h-[100vh] lg:grid-cols-2 xl:min-h-[100vh]">
-            {/* Ocultar panel azul en móvil, mostrar solo en lg+ */}
-            <div className="hidden lg:flex items-center justify-center py-12 bg-primary">
-                <ChaideLogo />
-            </div>
-            <div className="flex items-center justify-center min-h-screen py-12">
-                <Card className="mx-auto max-w-sm w-full shadow-2xl">
-                    <CardHeader className="text-center">
-                        <div className="flex justify-center items-center gap-2 mb-2">
-                            <Image
-                                src={`${environment.basePath}/img/Chide.svg`}
-                                alt="Chaide Logo"
-                                width={46}
-                                height={46}
-                                priority
-                            />
-                            <CardTitle className="text-2xl">Catálogo de Aplicaciones</CardTitle>
-                        </div>
-                        <CardDescription>
-                            Inicio de Sesión
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <form onSubmit={handleSubmit}>
-                            <div className="space-y-4 pt-6">
-                                <div className="space-y-2">
-                                    <Label htmlFor="usuario">Usuario</Label>
-                                    <Input 
-                                        id="usuario" 
-                                        name="usuario" 
-                                        placeholder="Ingrese su usuario (nombre.apellido o documento)" 
-                                        value={usuario}
-                                        onChange={(e) => detectLoginType(e.target.value)}
-                                        required 
-                                    />
-                                    <p className="text-xs text-muted-foreground">
-                                        {loginType === 'password' && '✓ Formato usuario detectado'}
-                                        {loginType === 'facial' && '✓ Validación facial detectada'}
-                                        {loginType === null && usuario && '✗ Formato no válido'}
-                                    </p>
-                                </div>
+    useEffect(() => {
+        const root = document.querySelector('.cx-auth');
+        if (!root) return;
+        const onOver = (e: Event) => {
+            const ev = e as PointerEvent;
+            const t = ev.target as HTMLElement;
+            const s = t.closest<HTMLElement>('[data-scramble-hover]');
+            const from = (ev.relatedTarget as HTMLElement | null)?.closest?.('[data-scramble-hover]');
+            if (!s || s === from) return;
+            if (s.dataset.scrambleSubtle !== undefined) {
+                s.querySelectorAll<HTMLElement>('[data-text]').forEach((child) => {
+                    if (child.dataset.text) scramble(child, child.dataset.text, 1.25, subtleScramble);
+                });
+                return;
+            }
+            if (s.dataset.text) scramble(s, s.dataset.text, 0.6);
+        };
+        root.addEventListener('pointerover', onOver);
+        return () => root.removeEventListener('pointerover', onOver);
+    }, []);
 
-                                {/* Mostrar campo contraseña solo si loginType es 'password' */}
-                                {loginType === 'password' && (
-                                    <div className="space-y-2 animate-in fade-in">
-                                        <Label htmlFor="password">Contraseña</Label>
-                                        <div className="relative">
-                                            <Input
-                                                id="password"
-                                                name="password"
-                                                type={showPassword ? 'text' : 'password'}
-                                                placeholder="Ingrese su contraseña"
-                                                required
-                                            />
-                                            <button
-                                                type="button"
-                                                tabIndex={-1}
-                                                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary focus:outline-none"
-                                                onClick={() => setShowPassword((v) => !v)}
-                                                aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                                            >
-                                                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
-                                
-                                {state && !state.success && state.message && (
-                                    <Alert variant="destructive">
-                                        <AlertTriangle className="h-4 w-4" />
-                                        <AlertTitle>Error de autenticación</AlertTitle>
-                                        <AlertDescription>
-                                            {state.message}
-                                        </AlertDescription>
-                                    </Alert>
-                                )}
-                                
-                                {/* Botón para login facial o contraseña, solo si el tipo es válido */}
-                                {loginType === 'facial' && (
-                                    <Button
-                                        type="submit"
-                                        className="w-full"
-                                        disabled={pending}
-                                    >
-                                        <Camera className="w-4 h-4 mr-2" />
-                                        {pending ? 'Validando...' : 'Validación Facial'}
-                                    </Button>
-                                )}
-                                {loginType === 'password' && (
-                                    <Button
-                                        type="submit"
-                                        className="w-full"
-                                        disabled={pending}
-                                    >
-                                        {pending ? 'Ingresando...' : 'Ingresar'}
-                                    </Button>
-                                )}
-                            </div>
-                        </form>
-                    </CardContent>
-                </Card>
+    const hint = loginType === 'password'
+        ? 'Formato de usuario detectado'
+        : loginType === 'facial'
+            ? 'Validación facial detectada'
+            : usuario
+                ? 'Formato no válido'
+                : 'Código de empleado o Nombre Usuario';
+
+    return (
+        <div className="cx cx-auth">
+            <Atmosphere fieldRef={fieldRef} initialShape="moon" initialLayout={AUTH_LAYOUT} />
+            <section className="cx-auth-copy">
+                <span className="eyebrow" data-scramble-hover data-text="Tecnología - Chaide">Tecnología - Chaide</span>
+                <h1 data-scramble-hover data-scramble-subtle>
+                    <span data-text="Todas las apps de Chaide, en">Todas las apps de Chaide, en</span>{' '}
+                    <span className="serif" data-text="un solo lugar.">un solo lugar.</span>
+                </h1>
+            </section>
+            <form className="cx-auth-card cx-glow" onSubmit={handleSubmit}>
+                <header>
+                    <img src={`${environment.basePath}/img/Chide.svg`} alt="" width={42} height={42} />
+                    <h2 data-scramble-hover data-text="Inicio de sesión">Inicio de sesión</h2>
+                    <p className="cx-auth-lead" data-scramble-hover data-text="Catálogo de aplicaciones">Catálogo de aplicaciones</p>
+                </header>
+                <div className="cx-auth-field">
+                    <label htmlFor="usuario" data-scramble-hover data-text="Usuario">Usuario</label>
+                    <input
+                        id="usuario"
+                        name="usuario"
+                        value={usuario}
+                        onChange={(e) => detectLoginType(e.target.value)}
+                        required
+                        autoComplete="username"
+                    />
+                    <p className={`cx-auth-hint${loginType ? ' is-ok' : usuario ? ' is-bad' : ''}`}>{hint}</p>
+                </div>
+                {loginType === 'password' && (
+                    <div className="cx-auth-field">
+                        <label htmlFor="password" data-scramble-hover data-text="Contraseña">Contraseña</label>
+                        <div style={{ position: 'relative' }}>
+                            <input
+                                id="password"
+                                name="password"
+                                type={showPassword ? 'text' : 'password'}
+                                placeholder="Ingrese su contraseña"
+                                required
+                                autoComplete="current-password"
+                            />
+                            <button
+                                type="button"
+                                tabIndex={-1}
+                                className="cx-auth-eye"
+                                onClick={() => setShowPassword((v) => !v)}
+                                aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                            >
+                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
+                        </div>
+                    </div>
+                )}
+                {state && !state.success && state.message && (
+                    <div className="cx-auth-error" role="alert">
+                        <AlertTriangle size={16} />
+                        <span>{state.message}</span>
+                    </div>
+                )}
+                {loginType === 'facial' && (
+                    <button type="submit" className="cx-auth-submit" disabled={pending}>
+                        <Camera size={16} />
+                        <span data-scramble-hover data-text={pending ? 'Validando...' : 'Validación facial'}>
+                            {pending ? 'Validando...' : 'Validación facial'}
+                        </span>
+                    </button>
+                )}
+                {loginType === 'password' && (
+                    <button type="submit" className="cx-auth-submit" disabled={pending}>
+                        <span data-scramble-hover data-text={pending ? 'Ingresando...' : 'Ingresar'}>
+                            {pending ? 'Ingresando...' : 'Ingresar'}
+                        </span>
+                    </button>
+                )}
+            </form>
 
                 {/* Modal de Validación Facial */}
                 <CameraModal
@@ -356,7 +333,6 @@ export default function LoginPage() {
                         }
                     }}
                 />
-            </div>
         </div>
     );
 }

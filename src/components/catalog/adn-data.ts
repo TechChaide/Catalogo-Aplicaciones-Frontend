@@ -19,24 +19,23 @@ export interface AdnStep {
 }
 
 export const ADN_CAPITULOS: AdnCapitulo[] = [
-    { key: 'esencia', nombre: 'Esencia', titulo: 'Nuestra', acento: 'esencia' },
-    { key: 'valores', nombre: 'Valores', titulo: 'Nuestros', acento: 'valores' },
-    { key: 'operacion', nombre: 'Operación', titulo: 'El ADN de la', acento: 'Operación' },
+    { key: 'esencia', nombre: 'Esencia', titulo: 'Nuestra', acento: 'Esencia' },
+    { key: 'valores', nombre: 'Valores', titulo: 'Nuestros', acento: 'Valores' },
+    { key: 'operacion', nombre: 'Pilares', titulo: 'Nuestros', acento: 'Pilares' },
 ];
 
 export const ADN_STEPS: AdnStep[] = [
-    { capitulo: 0, etiqueta: 'Propósito', titulo: 'Construimos un mundo mejor.' },
     { capitulo: 0, etiqueta: 'Misión', titulo: 'Superamos las expectativas de nuestros clientes con productos y servicios innovadores y de alta calidad, aplicando principios de sostenibilidad.' },
     { capitulo: 0, etiqueta: 'Visión', titulo: 'Generar bienestar a las personas y al planeta.' },
+    { capitulo: 0, etiqueta: 'Propósito', titulo: 'Construimos un mundo mejor.' },
 
     { capitulo: 1, titulo: 'Excelencia' },
     { capitulo: 1, titulo: 'Integridad' },
     { capitulo: 1, titulo: 'Trabajo en equipo' },
     { capitulo: 1, titulo: 'Compromiso' },
 
-    { capitulo: 2, icono: 'Gem', titulo: 'Calidad', destacado: 'Firma de Autor.', detalle: 'La perfección en el detalle mínimo como norma.' },
-    { capitulo: 2, icono: 'Scale', titulo: 'Integridad', destacado: 'Valentía de la verdad.', detalle: 'Reportar el error es un acto de honor.' },
-    { capitulo: 2, icono: 'Sprout', titulo: 'Sostenibilidad', destacado: 'Cuidado de la Casa.', detalle: 'Cero desperdicio por respeto al futuro.' },
-    { capitulo: 2, icono: 'Handshake', titulo: 'Trabajo en Equipo', destacado: 'Corresponsabilidad.', detalle: 'Nadie gana si el compañero se queda atrás.' },
-    { capitulo: 2, icono: 'ScanFace', titulo: 'Servicio', destacado: 'Foco en el Otro.', detalle: 'Excelencia para el cliente interno y externo.' },
+    { capitulo: 2, icono: 'Gem', titulo: 'Calidad' },
+    { capitulo: 2, icono: 'HeartHandshake', titulo: 'Experiencia del cliente' },
+    { capitulo: 2, icono: 'Sprout', titulo: 'Sostenibilidad' },
+    { capitulo: 2, icono: 'Sparkles', titulo: 'Innovación' },
 ];
